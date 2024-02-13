@@ -1,0 +1,77 @@
+image: gitpod/workspace-full:2023-01-16-03-31-28
+tasks:
+  - name: Set up aliases
+    init: cp .bash_aliases ~/.bash_aliases # ensure new terminals also have access to tctl
+  - name: Temporal Local Development Server
+    init: |
+      curl -sSf https://temporal.download/cli.sh | sh
+      python -m venv /workspace/.env
+      source /workspace/.env/bin/activate
+      python -m pip install -r requirements.txt
+    command: |
+      echo "waiting for server...."      
+      clear
+      source /workspace/edu-converters-python-code/.bash_aliases
+      export TEMPORAL_CORS_ORIGINS=http://localhost:3000
+      export TEMPORAL_NOTIFY_ON_NEW_VERSION=false
+      temporal server start-dev --db-filename $HOME/.cluster-persistence.db
+  - name: Worker
+    command: |
+      gp ports await 7233 && gp ports await 8233 && sleep 25 && gp preview $(gp url 8080)
+      source /workspace/edu-converters-python-code/.bash_aliases
+      clear
+      echo "Waiting for Python packages to install..."
+      sleep 30 # add sleep to give venv time to finish
+      source /workspace/.env/bin/activate
+      clear
+      echo "Use this terminal to run your Worker"
+    openMode: tab-after
+  - name: Terminal
+    command: |
+      gp open README.md
+      source /workspace/edu-converters-python-code/.bash_aliases
+      clear
+      echo "Waiting for Python packages to install..."
+      sleep 30  # add sleep to give venv time to finish
+      source /workspace/.env/bin/activate
+      clear
+      echo "Use this terminal to run commands.."
+    openMode: split-right
+  - name: Codec Server
+    command: |
+      gp open README.md
+      source /workspace/edu-converters-python-code/.bash_aliases
+      clear
+      echo "Waiting for Python packages to install..."
+      sleep 30  # add sleep to give venv time to finish
+      source /workspace/.env/bin/activate
+      clear
+      echo "Use this terminal to run your codec server.."
+    openMode: split-right
+
+ports:
+  - name: Temporal server
+    port: 7233
+    onOpen: ignore
+  - name: Codec server
+    port: 8081
+    onOpen: ignore
+  - name: Temporal Web UI
+    port: 8233 # temporal UI
+    description: Temporal Web UI
+    onOpen: ignore
+    visibility: private
+
+vscode:
+  extensions:
+    - golang.Go
+    - ms-python.python
+    - redhat.java
+    - vscjava.vscode-java-test
+    - vscjava.vscode-java-debug
+    - wingrunr21.vscode-ruby
+    - ms-toolsai.jupyter
+    - ms-toolsai.jupyter-keymap
+    - ms-toolsai.jupyter-renderers
+    - ms-toolsai.vscode-jupyter-cell-tags
+    - ms-toolsai.vscode-jupyter-slideshow
