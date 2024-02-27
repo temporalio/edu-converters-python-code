@@ -70,7 +70,7 @@ the complete version in the `solution` subdirectory.
 4. Now you can re-run the Workflow with your Custom Converter. Stop your Worker
    (with `Ctrl+C` in a blocking terminal) and restart it with `python
    worker.py`, then re-run the workflow with `python starter.py`. Finally,
-   get the result again with `temporal workflow show -w converters_workflowID`.
+   get the result again with `temporal workflow show -w encryption-workflow-id`.
    This time, your output will be encoded:
 
    ```
@@ -104,10 +104,12 @@ the complete version in the `solution` subdirectory.
    there isn't one, like so:
 
    ```python
+   async def run(self, name: str) -> str:
+      raise ApplicationError("This is designed to fail on purpose")
    ```
 
    Next, try re-running your Workflow, and it should fail.
-3. Run `temporal workflow show -w converters_workflowID` to get the status of your
+3. Run `temporal workflow show -w encryption-workflow-id` to get the status of your
    failed Workflow. Notice that the `Failure:` field should now display an encoded
    result, rather than a plain text error:
 
@@ -152,7 +154,7 @@ the complete version in the `solution` subdirectory.
 
    Make this change to the `client.Options{}` block in both `starter.py` and
    `worker.py`, then restart your worker and re-run your Workflow.
-2. Run `temporal workflow show -w converters_workflowID` once more to get what will
+2. Run `temporal workflow show -w encryption-workflow-id` once more to get what will
    now be stock, unencrypted output following your Composite Data Converter logic:
 
    ```

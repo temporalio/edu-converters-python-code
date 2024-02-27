@@ -16,8 +16,8 @@ async def main():
 		# Set data_converter here to ensure that workflow inputs and results are
 		# encoded as required.
 		# TODO Part A: Add a `data_converter` parameter here to use the
-        # `EncryptionCodec()` from `data_converter.go`. This overrides the
-        # stock behavior. Otherwise, the default data converter will be used.
+        # `EncryptionCodec()` from `codec.py`. This overrides the stock
+        # behavior. Otherwise, the default data converter will be used.
         # It should look like this:
         # data_converter=dataclasses.replace(
 		#   temporalio.converter.default(), payload_codec=EncryptionCodec()
