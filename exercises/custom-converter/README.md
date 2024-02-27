@@ -36,25 +36,17 @@ the complete version in the `solution` subdirectory.
    After that, you can use the `temporal` CLI to show the Workflow result:
 
    ```shell
-   temporal workflow show -w converters_workflowID
+   temporal workflow show -w encryption-workflow-id
    ```
 
    ```
    Progress:
      ID          Time                     Type
-      1  2024-01-16T17:10:53Z  WorkflowExecutionStarted
-      2  2024-01-16T17:10:53Z  WorkflowTaskScheduled
-      3  2024-01-16T17:10:53Z  WorkflowTaskStarted
-      4  2024-01-16T17:10:53Z  WorkflowTaskCompleted
-      5  2024-01-16T17:10:53Z  MarkerRecorded
-      6  2024-01-16T17:10:53Z  MarkerRecorded
-      7  2024-01-16T17:10:53Z  ActivityTaskScheduled
-      8  2024-01-16T17:10:53Z  ActivityTaskStarted
-      9  2024-01-16T17:10:53Z  ActivityTaskCompleted
-     10  2024-01-16T17:10:53Z  WorkflowTaskScheduled
-     11  2024-01-16T17:10:53Z  WorkflowTaskStarted
-     12  2024-01-16T17:10:53Z  WorkflowTaskCompleted
-     13  2024-01-16T17:10:53Z  WorkflowExecutionCompleted
+      1  2024-02-27T19:51:31Z  WorkflowExecutionStarted
+      2  2024-02-27T19:51:31Z  WorkflowTaskScheduled
+      3  2024-02-27T19:51:31Z  WorkflowTaskStarted
+      4  2024-02-27T19:51:31Z  WorkflowTaskCompleted
+      5  2024-02-27T19:51:31Z  WorkflowExecutionCompleted
 
    Result:
      Status: COMPLETED
@@ -65,15 +57,17 @@ the complete version in the `solution` subdirectory.
    the string "Received Plain text input". In the next step, you'll add a Custom
    Data Converter.
 2. To add a Custom Data Converter, you don't need to change anything in your
-   Workflow code. You only need to add a `DataConverter` parameter to
-   `client.Dial()` where it is used in both `starter.py` and `worker.py`.
-3. Next, take a look in `data_converter.py`. This contains the Custom
-   Converter code you'll be using. The `Encode()` function should marshal a
-   payload to JSON then compress it using Python's
-   [snappy](https://github.com/andrix/python-snappy) codec, and set the file metadata.
-   The `Decode()` function does the same thing in reverse. Add the missing calls
-   to the `Encode()` function (you can use the `Decode()` function as a hint).
-4. Now you can re-run the Workflow with your Custom Conveter. Stop your Worker
+   Workflow code. You only need to add a `data_converter` parameter to
+   `Client.connect()` where it is used in both `starter.py` and `worker.py`.
+3. Next, take a look in `codec.py`. This contains the Custom Codec code you'll
+   be using. The `encode()` function serializes a payload to string format, then
+   compresses it Python's
+   [cramjam](https://github.com/milesgranger/cramjam/tree/master/cramjam-python)
+   library to provide `snappy` compression, wraps the compressed result in
+   `bytes()`, and sets the file metadata. The `decode()` function should do the
+   same thing in reverse. Add the missing calls to the `decode()` function (you
+   can use the `encode()` function as a hint).
+4. Now you can re-run the Workflow with your Custom Converter. Stop your Worker
    (with `Ctrl+C` in a blocking terminal) and restart it with `python
    worker.py`, then re-run the workflow with `python starter.py`. Finally,
    get the result again with `temporal workflow show -w converters_workflowID`.
@@ -101,24 +95,18 @@ the complete version in the `solution` subdirectory.
    errors might contain sensitive information, you can encrypt the message and
    stack trace by configuring the default Failure Converter to use your encoded
    attributes, in which case it moves your message and stack_trace fields to a
-   Payload that's run through your codec. To do this, you can override the
-   default Failure Converter with a single additional parameter,
-   `EncodeCommonAttributes: true`. Make this change to `client.Dial()` where it
-   is used in both `starter.py` and `worker.py`, as you did before.
+   Payload that's run through your codec. To do this, you add a
+   `failure_converter_class` option to your `Client.connect()` call. Make this
+   change to `client.Dial()` where it is used in both `starter.py` and
+   `worker.py`, as you did before.
 2. To test your Failure Converter, change your Workflow to return an artificial
-   error. Change the `ExecuteActivity` call to throw an error where there isn't
-   one, like so:
+   error. Change the `@activity.defn` in `worker.py` to throw an error where
+   there isn't one, like so:
 
-   ```go
-	err = workflow.ExecuteActivity(ctx, Activity, input).Get(ctx, &result)
-	if err == nil {
-		err = errors.New("This is an artificial error")
-		logger.Error("Activity failed.", "Error", err)
-		return "", err
-	}
+   ```python
    ```
 
-   Don't forget to add the `errors` package to `workflow.py` as well. Next, try
+   Don't forget to add the `errors` package to `worker.py` as well. Next, try
    re-running your Workflow, and it should fail.
 3. Run `temporal workflow show -w converters_workflowID` to get the status of your
    failed Workflow. Notice that the `Failure:` field should now display an encoded
@@ -127,7 +115,7 @@ the complete version in the `solution` subdirectory.
    ```
    ...
    Status: FAILED
-   Failure: &Failure{Message:Encoded failure,Source:GoSDK,StackTrace:,Cause:nil,FailureType:Failure_ApplicationFailureInfo,}
+   Failure: &Failure{Message:Encoded failure,Source:PythonSDK,StackTrace:,Cause:nil,FailureType:Failure_ApplicationFailureInfo,}
    ```
 
 
@@ -140,33 +128,27 @@ the complete version in the `solution` subdirectory.
    construct a Composite Data Converter that provies a set of rules in a custom
    order. For example, the default Python Data Converter looks like this:
 
-   ```go
-   defaultDataConverter = NewCompositeDataConverter(
-      NewNilPayloadConverter(),
-      NewByteSlicePayloadConverter(),
-      NewProtoJSONPayloadConverter(),
-      NewProtoPayloadConverter(),
-      NewJSONPayloadConverter(),
+   ```python
+   DefaultPayloadConverter.default_encoding_payload_converters = (
+       BinaryNullPayloadConverter(),
+       BinaryPlainPayloadConverter(),
+       JSONProtoPayloadConverter(),
+       BinaryProtoPayloadConverter(),
+       JSONPlainPayloadConverter(),
    )
    ```
 
-   Order is important. Both the `ProtoJsonPayload` and `ProtoPayload` converters
-   check for the same `proto.Message` interface. The first match will always be
-   used for serialization. Deserialization is controlled by metadata, therefore
-   both converters can deserialize the corresponding data format (JSON or binary
-   proto). For this exercise, you can try just omitting some of those converter
-   interfaces, if for example you don't want your workflow to convert Nil or
-   ByteSlice Payloads. Within the `client.Options{}` block, declare a
-   `DataConverter` without the Nil or ByteSlice converters:
+   Order is important. Both the `JSONProtoPayloadConverter()` and
+   `BinaryProtoPayloadConverter()` converters check for the same `proto.message`
+   interface. The first match will always be used for serialization.
+   Deserialization is controlled by metadata, therefore both converters can
+   deserialize the corresponding data format (JSON or binary proto). For this
+   exercise, you can try just omitting some of those converter interfaces, if
+   for example you don't want your workflow to convert Nil or ByteSlice
+   Payloads. Within the `Client.connect()` call, declare a `temporal.converter`
+   without the Nil or ByteSlice converters:
 
-   ```go
-   ClientOptions: client.Options{
-		DataConverter: converter.NewCompositeDataConverter(
-			converter.NewProtoJSONPayloadConverter(),
-			converter.NewProtoPayloadConverter(),
-			converter.NewJSONPayloadConverter(),
-		),
-   },
+   ```python
    ```
 
    Make this change to the `client.Options{}` block in both `starter.py` and
