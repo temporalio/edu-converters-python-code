@@ -100,14 +100,13 @@ the complete version in the `solution` subdirectory.
    change to `client.Dial()` where it is used in both `starter.py` and
    `worker.py`, as you did before.
 2. To test your Failure Converter, change your Workflow to return an artificial
-   error. Change the `@activity.defn` in `worker.py` to throw an error where
+   error. Change the `GreetingWorkflow()` in `worker.py` to throw an error where
    there isn't one, like so:
 
    ```python
    ```
 
-   Don't forget to add the `errors` package to `worker.py` as well. Next, try
-   re-running your Workflow, and it should fail.
+   Next, try re-running your Workflow, and it should fail.
 3. Run `temporal workflow show -w converters_workflowID` to get the status of your
    failed Workflow. Notice that the `Failure:` field should now display an encoded
    result, rather than a plain text error:

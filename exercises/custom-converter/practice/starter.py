@@ -3,6 +3,7 @@ import dataclasses
 
 import temporalio.converter
 from temporalio.client import Client
+from temporalio.common import RetryPolicy
 
 from codec import EncryptionCodec
 from worker import GreetingWorkflow
@@ -31,7 +32,7 @@ async def main():
         GreetingWorkflow.run,
         "Temporal",
         id=f"encryption-workflow-id",
-        task_queue="encryption-task-queue",
+        task_queue="encryption-task-queue"
     )
 
 if __name__ == "__main__":
