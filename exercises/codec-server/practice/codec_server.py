@@ -17,7 +17,7 @@ from aiohttp import hdrs, web
 from google.protobuf import json_format
 from temporalio.api.common.v1 import Payload, Payloads
 
-from codec import EncryptionCodec
+# TODO Part A: Import the `EncryptionCodec` class from your other code
 
 def build_codec_server(arguments) -> web.Application:
     async def header_options(req: web.Request) -> web.Response:
