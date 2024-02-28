@@ -16,11 +16,11 @@ the complete version in the `solution` subdirectory.
 
 ## Part A: Configure a Codec Server to Use Your Data Converter
 
-1. First, you'll review a barebones Codec Server implementation in Python, and make
-   the necessary changes to integrate the custom data converter from Exercise 1.
-   Examine the `codec-server.py`. This file contains a complete HTTP server
-   implementation using Python's
-   [Flask](https://flask.palletsprojects.com/en/3.0.x/) library. It listens on
+1. First, you'll review a barebones Codec Server implementation in Python, and
+   make the necessary changes to integrate the custom data converter from
+   Exercise 1. Examine the `codec-server.py`. This file contains a complete HTTP
+   server implementation using Python's
+   [AIOHTTP](https://docs.aiohttp.org/en/stable/) library. It listens on
    endpoints at `/{namespace}/encode` and `/{namespace}/decode` as expected by
    the Temporal CLI, Web UI, and SDKs, and contains stubs for OIDC and CORS
    enablement. These are the baseline requirements for a Temporal Codec Server,
@@ -30,12 +30,11 @@ the complete version in the `solution` subdirectory.
    before they can be deployed from sample code. Specifically, Codec Servers
    need to import the Converter logic from your own application, and then map
    the Converter logic on a per-Namespace basis. Add an `import` statement at
-   the top of `codec-server.py` to import the rest of your application as a
-   Python library named `temporalconverters`.
-3. Next, create an array named `codecs` in the `main()` function of
-   `codec-server.py`. Keys should be Namespace strings. Values should be of
-   the type `converter.PayloadCodec`. By default, you only need to assign the
-   `default` namespace to `{temporalconverters.NewPayloadCodec()}` from this
+   the top of `codec-server.py` to import the `EncryptionCodec` class from
+   `codec.py`.
+3. Next, create an dictionary named `codecs` after initializing your `app`. Keys
+   should be Namespace strings. Values should be Codec classes. By default, you
+   only need to assign the `default` namespace to `EncryptionCodec()` from this
    example.
 4. After making these additions, you should have a functioning Codec Server,
    integrated with your application logic. Again, everything else in here is
@@ -78,8 +77,8 @@ the complete version in the `solution` subdirectory.
    To do this, you first need to enable
    [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing), a common
    HTTP feature for securely making cross-domain requests.
-   `codec-server.py` contains a function called `newCORSHTTPHandler()`
-   which will add the necessary headers to your HTTP requests to support CORS,
+   `codec-server.py` contains a function called `header_options()`
+   which can add the necessary headers to your HTTP requests to support CORS,
    but it is not enabled by default. This example Codec Server exposes an
    additional command line parameter, `--web`, to conditionally enable CORS.
    Restart the Codec Server with the `--web` flag: `python codec-server.py --web
@@ -106,7 +105,7 @@ the complete version in the `solution` subdirectory.
 
    ![Codec Server enabled](images/codec-server-enabled.png)
 
-1. When you navigate back to your Workflow History and scroll to the "Input
+3. When you navigate back to your Workflow History and scroll to the "Input
    and Results" section, you should find your payload automatically decoded by
    your Codec Server:
 
