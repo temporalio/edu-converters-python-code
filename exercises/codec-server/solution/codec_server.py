@@ -22,9 +22,9 @@ from codec import EncryptionCodec
 def build_codec_server(arguments) -> web.Application:
     async def header_options(req: web.Request) -> web.Response:
         resp = web.Response()
-        if arguments["web"]==True:
-            if req.headers.get(hdrs.ORIGIN) == arguments["url"]:
-                resp.headers[hdrs.ACCESS_CONTROL_ALLOW_ORIGIN] = arguments["url"]
+        if arguments["--web"]==True:
+            if req.headers.get(hdrs.ORIGIN) == arguments["<url>"]:
+                resp.headers[hdrs.ACCESS_CONTROL_ALLOW_ORIGIN] = arguments["<url>"]
                 resp.headers[hdrs.ACCESS_CONTROL_ALLOW_METHODS] = "POST"
                 resp.headers[hdrs.ACCESS_CONTROL_ALLOW_HEADERS] = "content-type,x-namespace"
         return resp

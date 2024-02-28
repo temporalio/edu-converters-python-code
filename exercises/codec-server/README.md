@@ -47,7 +47,7 @@ the complete version in the `solution` subdirectory.
    connections.
 5. Now you can retrieve the decoded output of your Workflow Execution from the
    previous Exercise. From another terminal window, run `temporal workflow show \
-   -w converters_workflowID --codec-endpoint 'http://localhost:8081/{namespace}'`.
+   -w encryption-workflow-id --codec-endpoint 'http://localhost:8081/{namespace}'`.
    It should retain the same Event History as before, with the decoded result
    appended to the output:
 
@@ -55,7 +55,7 @@ the complete version in the `solution` subdirectory.
    ...
    Result:
      Status: COMPLETED
-     Output: ["Received Plain text input"]
+     Output: ["Hello, Temporal"]
    ```
 
    You now have a working Codec Server implementation. In the following steps,
