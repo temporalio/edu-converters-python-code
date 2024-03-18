@@ -3,9 +3,8 @@
 During this exercise, you will: 
 
 * Output typical payloads from a Temporal Workflow using the default Data Converters
-* Implement a Custom Data Converter that encrypts Workflow output
+* Implement a Custom Codec that encrypts Workflow output
 * Implement a Failure Converter and demonstrate parsing its output
-* Implement a Composite Data Converter that combines multiple conversion steps
 
 Make your changes to the code in the `practice` subdirectory (look for 
 `TODO` comments that will guide you to where you should make changes to 
@@ -13,15 +12,14 @@ the code). If you need a hint or want to verify your changes, look at
 the complete version in the `solution` subdirectory.
 
 
-## Part A: Implement a Custom Data Converter
+## Part A: Implement a Custom Codec
 
-1. Similar to other Temporal features like opting in to Worker Versioning,
-   defining a Custom Data Converter is only a one-line change to your existing
-   Worker and Starter code. The Example in the Practice subdirectory of this
-   exercise is missing the necessary change to use a Custom Data Converter,
-   meaning that you can run it out of the box, and produce JSON output using the
-   Default Data Converter. You'll do this first, so you have an idea of the
-   expected output. First, start the Worker:
+1. You can supply a Custom Codec to your Data Converter in a single
+   configuration parameter. The example in the Practice subdirectory of this
+   exercise is missing that necessary change, meaning that you can run it out of
+   the box, and produce JSON output using the Default Data Converter. You'll do
+   this first, so you have an idea of the expected output. First, start the
+   Worker:
 
    ```shell
    python worker.py
@@ -55,10 +53,10 @@ the complete version in the `solution` subdirectory.
 
    You should now have an idea of how this Workflow runs ordinarily — it outputs
    the string "Received Plain text input". In the next step, you'll add a Custom
-   Data Converter.
-2. To add a Custom Data Converter, you don't need to change anything in your
-   Workflow code. You only need to add a `data_converter` parameter to
-   `Client.connect()` where it is used in both `starter.py` and `worker.py`.
+   Codec.
+2. To add a Custom Codec, you don't need to change anything in your Workflow
+   code. You only need to add a `data_converter` parameter to `Client.connect()`
+   where it is used in both `starter.py` and `worker.py`.
 3. Next, take a look in `codec.py`. This contains the Custom Codec code you'll
    be using. The `encode()` function serializes a payload to string format, then
    compresses it Python's
@@ -67,7 +65,7 @@ the complete version in the `solution` subdirectory.
    `bytes()`, and sets the file metadata. The `decode()` function should do the
    same thing in reverse. Add the missing calls to the `decode()` function (you
    can use the `encode()` function as a hint).
-4. Now you can re-run the Workflow with your Custom Converter. Stop your Worker
+4. Now you can re-run the Workflow with your Custom Codec. Stop your Worker
    (with `Ctrl+C` in a blocking terminal) and restart it with `python
    worker.py`, then re-run the workflow with `python starter.py`. Finally,
    get the result again with `temporal workflow show -w encryption-workflow-id`.
@@ -83,8 +81,8 @@ the complete version in the `solution` subdirectory.
   The `payload encoding is not supported` message is normal — the Temporal
   Cluster itself can't use the `Decode` function directly without a Codec
   Server, which you'll create in the next exercise. In the meantime, you have
-  successfully implemented a Custom Data Converter, and in the next step, you'll
-  add more features to it. 
+  successfully implemented Custom Data Conversion, and in the next step, you'll
+  add another feature. 
 
 
 ## Part B: Implement a Failure Converter
@@ -118,54 +116,6 @@ the complete version in the `solution` subdirectory.
    Status: FAILED
    Failure: &Failure{Message:Encoded failure,Source:PythonSDK,StackTrace:,Cause:nil,FailureType:Failure_ApplicationFailureInfo,}
    ```
-
-
-## Part C: Implement a Composite Data Converter
-
-1. Finally, you can implement a Composite Data Converter. A Composite Data
-   Converter is used to apply custom, type-specific Payload Converters in a
-   specified order. Rather than overriding the default Data Converter and
-   Failure Converter as you did in the last two parts of this exercise, you can
-   construct a Composite Data Converter that provies a set of rules in a custom
-   order. For example, the default Python Data Converter looks like this:
-
-   ```python
-   DefaultPayloadConverter.default_encoding_payload_converters = (
-       BinaryNullPayloadConverter(),
-       BinaryPlainPayloadConverter(),
-       JSONProtoPayloadConverter(),
-       BinaryProtoPayloadConverter(),
-       JSONPlainPayloadConverter(),
-   )
-   ```
-
-   Order is important. Both the `JSONProtoPayloadConverter()` and
-   `BinaryProtoPayloadConverter()` converters check for the same `proto.message`
-   interface. The first match will always be used for serialization.
-   Deserialization is controlled by metadata, therefore both converters can
-   deserialize the corresponding data format (JSON or binary proto). For this
-   exercise, you can try just omitting some of those converter interfaces, if
-   for example you don't want your workflow to convert Nil or ByteSlice
-   Payloads. Within the `Client.connect()` call, declare a `temporal.converter`
-   without the Nil or ByteSlice converters:
-
-   ```python
-   ```
-
-   Make this change to the `client.Options{}` block in both `starter.py` and
-   `worker.py`, then restart your worker and re-run your Workflow.
-2. Run `temporal workflow show -w encryption-workflow-id` once more to get what will
-   now be stock, unencrypted output following your Composite Data Converter logic:
-
-   ```
-   Result:
-     Status: COMPLETED
-     Output: ["Received Plain text input"]
-   ```
-
-   You may not need to use a Composite Data Converter as often as you will need
-   to override the stock Data Converter to add encryption, but if you have
-   complex Workflow logic, you may need to do both.
 
 
 ### This is the end of the exercise.

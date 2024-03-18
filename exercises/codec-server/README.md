@@ -32,11 +32,11 @@ the complete version in the `solution` subdirectory.
    the Converter logic on a per-Namespace basis. Add an `import` statement at
    the top of `codec-server.py` to import the `EncryptionCodec` class from
    `codec.py`.
-3. Next, create an dictionary named `codecs` after initializing your `app`. Keys
-   should be Namespace strings. Values should be Codec classes. By default, you
-   only need to assign the `default` namespace to `EncryptionCodec()` from this
-   example.
-4. After making these additions, you should have a functioning Codec Server,
+3. Next in `codec-server.py`, create a dictionary named `codecs` after initializing
+   your `app` and before setting endpoints on it with `add_routes()` . Keys should
+   be Namespace strings. Values should be Codec classes. By default, you only need
+   to assign the `default` namespace to `EncryptionCodec()` from this example.
+5. After making these additions, you should have a functioning Codec Server,
    integrated with your application logic. Again, everything else in here is
    configured as generically as possible — note that this example Codec Server
    listens on port 8081, which is usually used in testing configurations — but
@@ -45,7 +45,7 @@ the complete version in the `solution` subdirectory.
    Run your Codec Server with `python codec-server.py` from the root of your
    project directory. This will block the terminal it runs in, and await
    connections.
-5. Now you can retrieve the decoded output of your Workflow Execution from the
+6. Now you can retrieve the decoded output of your Workflow Execution from the
    previous Exercise. From another terminal window, run `temporal workflow show \
    -w encryption-workflow-id --codec-endpoint 'http://localhost:8081/{namespace}'`.
    It should retain the same Event History as before, with the decoded result
