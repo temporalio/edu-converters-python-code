@@ -34,7 +34,7 @@ is a virtual environment already setup for you and you can skip this section.
 If you are running these exercises locally, be sure you are using Python 3.7+.
 
 1. Open a terminal window in the environment and change directories to the root directory of the
-   `edu-converters-python-code` repository
+   `edu-appdatasec-python-code` repository
 2. Run the following command to create a virtual environment
 
 ```
@@ -90,7 +90,7 @@ However, the packages are already installed, so there is no need to run pip agai
 You can launch an exercise environment for this course in GitPod by 
 clicking the button below:
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/temporalio/edu-converters-python-code)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/temporalio/edu-appdatasec-python-code)
 
 Alternatively, you can follow 
 [these instructions](https://learn.temporal.io/getting_started/python/dev_environment/) to 
